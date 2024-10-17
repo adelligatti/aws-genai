@@ -1,18 +1,25 @@
-import { typescript } from 'projen';
+import { awscdk } from 'projen';
 import { NodePackageManager } from 'projen/lib/javascript';
 import { StreamlitQuickStartPOC } from './projenrc/projects/streamlit-quickstart-poc';
 
 /**
  * Base project for repo
  */
-const project = new typescript.TypeScriptProject({
+const project = new awscdk.AwsCdkTypeScriptApp({
+  cdkVersion: '2.162.1',
   authorName: 'AWS',
   packageManager: NodePackageManager.NPM,
   defaultReleaseBranch: 'main',
   name: 'genai-quickstart-pocs',
   projenrcTs: true,
+  tsconfig: {
+    include: [
+      'genai-quickstart-pocs-python/deployment/*',
+    ],
+  },
   deps: [
     'nunjucks',
+    'constructs',
   ],
   devDeps: [
     '@types/nunjucks',
@@ -375,16 +382,6 @@ new StreamlitQuickStartPOC({
     pocGoal: {
       architectureImage: false,
       overview: 'The goal of this POC is to showcase leveraging Generative AI for to create both the content for a presentation and also the background research queries to support the content generation.',
-    },
-    additionalPrerequisits: ['SMILE'],
-    extraSteps: [
-      { instructions: 'SMILE', command: 'don\'t frown' },
-    ],
-    fileWalkthrough: {
-      files: [
-        { description: 'smile', name: 'smile' },
-      ],
-      includeDefaults: true,
     },
   },
 }).synth();

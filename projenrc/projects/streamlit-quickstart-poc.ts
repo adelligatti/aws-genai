@@ -10,6 +10,7 @@ interface StreamlitQuickStartPOCProps {
   pocPackageName: string;
   pocDescription?: string;
   additionalDeps?: string[];
+  gitIgnore?: string[];
   readme?: {
     additionalPrerequisits?: string[];
     pocGoal?: {
@@ -44,13 +45,11 @@ export class StreamlitQuickStartPOC extends PythonProject {
       projenrcTs: true,
       name: props.pocPackageName,
       description: props.pocDescription,
-      deps: [
-        'streamlit',
-        'boto3',
-        'botocore',
-        'python-dotenv',
-      ],
+      deps: ['streamlit', 'boto3', 'botocore', 'python-dotenv'],
       pip: true,
+      gitIgnoreOptions: {
+        ignorePatterns: ['.env/*', 'venv/*', ...props.gitIgnore ?? []],
+      },
       venv: true,
       sample: false,
       authorEmail: 'no-email@aws.amazon.com',
@@ -63,64 +62,80 @@ export class StreamlitQuickStartPOC extends PythonProject {
     for (const dep of props.additionalDeps ?? []) {
       this.addDependency(dep);
     }
+
+    this.addTask('start', {
+      description: 'Run Streamlit app in virtual environment',
+      exec: [
+        // Create venv if it doesn't exist
+        '[ ! -d ".env" ] && python3 -m venv .env || true',
+
+        // Run everything else in a single bash context to maintain the activated venv
+        'sh -c "source .env/bin/activate && trap deactivate EXIT && streamlit run app.py"',
+      ].join(' && '),
+    });
     new POCProjectFiles(this, props);
   }
-
 
   postSynthesize() {
     // Overriding the default postSynth to avoid every POC installing dependencies!
   }
-}
 
+  runPOC() {
+    this.envManager.setupEnvironment();
+  }
+
+
+}
 
 class POCProjectFiles extends Component {
   private pocProps: StreamlitQuickStartPOCProps;
   constructor(project: Project, props: StreamlitQuickStartPOCProps) {
     super(project);
     this.pocProps = props;
-
   }
   /**
    * Synthesize the project files
    */
   public synthesize(): void {
-    new README(this.project, this.pocProps).synthesize();
-    new HOWTO(this.project).synthesize();
+    new README(this.project, this.pocProps);
+    new HOWTO(this.project);
     if (!this.pocProps.skipApp) {
-      new AppDotPy(this.project).synthesize();
+      new AppDotPy(this.project);
     }
 
   }
-
 }
-
 
 class README extends SampleFile {
   constructor(scope: Project, pocProps: StreamlitQuickStartPOCProps) {
-    try {
-      const README_TEMPLATE = path.join(__dirname, 'resources', 'streamlit-readme.md');
-      const readmeTemplate = fs.readFileSync(README_TEMPLATE, 'utf-8');
-      const readmeContent = nunjucks.renderString(readmeTemplate, {
-        pocTitle: pocProps.pocName,
-        pocOverview: pocProps.pocDescription,
-        pocPath: `genai-quickstart-pocs-python/${pocProps.pocPackageName}`,
-        additionalPrerequisits: pocProps.readme?.additionalPrerequisits,
-        pocGoal: pocProps.readme?.pocGoal,
-        fileWalkthrough: pocProps.readme?.fileWalkthrough,
-        extraSteps: pocProps.readme?.extraSteps,
-      });
-      super(scope, 'README.md', {
-        contents: readmeContent,
-      });
-    } catch (e) {
-      console.error(`Error with README ${scope.name}`, e);
-    }
+    const README_TEMPLATE = path.join(
+      __dirname,
+      'resources',
+      'streamlit-readme.md',
+    );
+    const readmeTemplate = fs.readFileSync(README_TEMPLATE, 'utf-8');
+    const readmeContent = nunjucks.renderString(readmeTemplate, {
+      pocTitle: pocProps.pocName,
+      pocOverview: pocProps.pocDescription,
+      pocPath: `genai-quickstart-pocs-python/${pocProps.pocPackageName}`,
+      additionalPrerequisits: pocProps.readme?.additionalPrerequisits,
+      pocGoal: pocProps.readme?.pocGoal,
+      fileWalkthrough: pocProps.readme?.fileWalkthrough,
+      extraSteps: pocProps.readme?.extraSteps,
+    });
+    super(scope, 'README.md', {
+      contents: readmeContent,
+    });
   }
 }
 
 class HOWTO extends SampleFile {
   constructor(scope: Project) {
-    const HOWTO_TEMPLATE: string = path.join(__dirname, 'resources', 'streamlit-howto.md');
+    const HOWTO_TEMPLATE: string = path.join(
+      __dirname,
+      'resources',
+      'streamlit-howto.md',
+    );
     const howtoTemplate = fs.readFileSync(HOWTO_TEMPLATE, 'utf-8');
     super(scope, 'HOWTO.md', {
       contents: howtoTemplate,

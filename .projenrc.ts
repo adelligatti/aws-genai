@@ -221,6 +221,9 @@ new StreamlitQuickStartPOC({
   parentProject: project,
   pocName: 'Amazon Bedrock Chat POC',
   pocPackageName: 'amazon-bedrock-chat-poc',
+  gitIgnore: [
+    'chat_history.txt',
+  ],
   additionalDeps: [
     'langchain@^0.1',
     'langchain-community',

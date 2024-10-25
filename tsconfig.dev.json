@@ -23,16 +23,22 @@
     "strictNullChecks": true,
     "strictPropertyInitialization": true,
     "stripInternal": true,
-    "target": "ES2019"
+    "target": "ES2019",
+    "sourceRoot": ".",
+    "rootDir": "."
   },
   "include": [
-    "src/**/*.ts",
+    "./**/*.ts",
     "test/**/*.ts",
-    "genai-quickstart-pocs-python/deployment/*",
+    "genai-quickstart-pocs-python/poc-deployment/*",
+    "genai-quickstart-pocs-python/cli/*",
+    "projenrc/**/*",
+    "genai-quickstart-pocs-python/**/cdk/*",
     ".projenrc.ts",
     "projenrc/**/*.ts"
   ],
   "exclude": [
-    "node_modules"
+    "node_modules",
+    "cdk.out"
   ]
 }

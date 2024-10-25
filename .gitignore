@@ -31,8 +31,6 @@ jspm_packages/
 .yarn-integrity
 .cache
 **/.DS_Store
-**/__pycache__/
-.env/
 /test-reports/
 junit.xml
 /coverage/
@@ -43,7 +41,7 @@ junit.xml
 !/test/
 !/tsconfig.json
 !/tsconfig.dev.json
-!/src/
+!/./
 /lib
 /dist/
 !/.eslintrc.json
